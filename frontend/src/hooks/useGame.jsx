@@ -106,17 +106,14 @@ export const useGame = () => {
     ) {
       dispatch({ type: "SET_THINKING", payload: true });
       // Simulate bot thinking time
-      new Promise((resolve, reject) => {
-        setTimeout(() => {
-          resolve();
-        }, 1500); // Simulate 1.5 seconds thinking time
-      }).then(() => {
+
+      setTimeout(() => {
         const botMove = getBotMove(gameState, gameState.botDifficulty);
         if (botMove) {
           dispatch({ type: "BOT_MOVE", payload: botMove });
         }
         dispatch({ type: "SET_THINKING", payload: false });
-      });
+      }, 400); // 400ms delay for UI update
     }
   }, [
     gameState.currentPlayer,
@@ -126,9 +123,7 @@ export const useGame = () => {
   ]);
 
   const makeMove = (boardIndex, cellIndex) => {
-    if (gameState.currentPlayer === "x") {
-      dispatch({ type: "MAKE_MOVE", payload: { boardIndex, cellIndex } });
-    } // Prevent making moves when it's not the player's turn
+    dispatch({ type: "MAKE_MOVE", payload: { boardIndex, cellIndex } });
   };
 
   const resetGame = () => {
