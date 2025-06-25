@@ -37,16 +37,31 @@ const GameBoard = ({ gameState, onCellClick, onResetGame, onBackToHome }) => {
 
   const getStatusMessage = () => {
     if (gameState.isGameOver) {
+      if (gameState.gameWinner === "opponent_left") {
+        return "Opponent Left the Game";
+      }
       if (gameState.gameWinner) {
-        return gameState.gameMode === "bot"
-          ? `${gameState.gameWinner === "x" ? "You" : "Bot"} Won!`
-          : `Player ${gameState.gameWinner} Won!`;
+        if (gameState.gameMode === "bot") {
+          return `${gameState.gameWinner === "x" ? "You" : "Bot"} Won!`;
+        } else {
+          return gameState.isMyTurn
+            ? gameState.gameWinner === gameState.playerSymbol
+              ? "You Won!"
+              : "Opponent Won!"
+            : gameState.gameWinner === gameState.playerSymbol
+            ? "You Won!"
+            : "Opponent Won!";
+        }
       }
       return "It's a Draw!";
     }
 
     if (gameState.isThinking) {
       return "Bot is thinking...";
+    }
+
+    if (gameState.gameMode === "online") {
+      return gameState.isMyTurn ? "Your Turn" : "Opponent's Turn";
     }
 
     return gameState.gameMode === "bot"
@@ -61,24 +76,36 @@ const GameBoard = ({ gameState, onCellClick, onResetGame, onBackToHome }) => {
         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 mb-6 shadow-lg">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="flex items-center space-x-4">
-              <button
-                onClick={onBackToHome}
-                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 cursor-pointer"
-              >
-                <Home className="w-5 h-5" />
-              </button>
+              {gameState.gameMode !== "online" && (
+                <button
+                  onClick={onBackToHome}
+                  className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 cursor-pointer"
+                >
+                  <Home className="w-5 h-5" />
+                </button>
+              )}
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                   Super Tic Tac Toe
                 </h1>
-                {gameState.gameMode === "bot" && (
-                  <div
-                    className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${difficultyInfo.bgColor} ${difficultyInfo.color}`}
-                  >
-                    <Bot className="w-3 h-3" />
-                    <span>{difficultyInfo.name} Bot</span>
-                  </div>
-                )}
+                <div className="flex items-center space-x-2">
+                  {gameState.gameMode === "bot" && (
+                    <div
+                      className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${difficultyInfo.bgColor} ${difficultyInfo.color}`}
+                    >
+                      <Bot className="w-3 h-3" />
+                      <span>{difficultyInfo.name} Bot</span>
+                    </div>
+                  )}
+                  {gameState.gameMode === "online" && (
+                    <div className="inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                      <User className="w-3 h-3" />
+                      <span>
+                        You are {gameState.playerSymbol?.toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -101,7 +128,12 @@ const GameBoard = ({ gameState, onCellClick, onResetGame, onBackToHome }) => {
               </div>
               <button
                 onClick={onResetGame}
-                className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors duration-200 cursor-pointer"
+                disabled={gameState.gameMode === "online"}
+                className={`p-2 rounded-lg ${
+                  gameState.gameMode === "online"
+                    ? "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                    : "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 cursor-pointer"
+                } transition-colors duration-200`}
               >
                 <RotateCcw className="w-5 h-5" />
               </button>

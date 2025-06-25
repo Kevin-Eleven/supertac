@@ -4,14 +4,25 @@ import HomePage from "./pages/HomePage";
 import Header from "./components/Header";
 import GameBoard from "./components/GameBoard";
 import DifficultySelector from "./components/DifficultySelector";
+import RoomsView from "./components/RoomsView";
+import WaitingScreen from "./components/WaitingScreen";
 
 import { useGame } from "./hooks/useGame";
+import MultiplayerLobby from "./components/MultiplayerLobby";
 function App() {
   const [currentView, setCurrentView] = useState("home"); // 'home', 'difficulty', 'game', 'multiplayer'
   const [selectedDifficulty, setSelectedDifficulty] = useState("medium");
 
-  const { gameState, makeMove, resetGame, setGameMode, setBotDifficulty } =
-    useGame();
+  const {
+    gameState,
+    makeMove,
+    resetGame,
+    setGameMode,
+    setBotDifficulty,
+    createRoom,
+    playRandom,
+    joinRoomById,
+  } = useGame();
 
   const handlePlayBot = () => {
     setCurrentView("difficulty");
@@ -19,9 +30,7 @@ function App() {
 
   const handlePlayMultiplayer = () => {
     // TODO: Implement multiplayer lobby
-    alert(
-      "Multiplayer mode coming soon! For now, enjoy playing against our AI bots."
-    );
+    setCurrentView("multiplayer");
   };
 
   const handleDifficultySelect = (difficulty) => {
@@ -48,6 +57,29 @@ function App() {
     resetGame();
   };
 
+  const handlePlayRandom = () => {
+    setGameMode("online");
+    resetGame();
+    // join a random room and start playing if no room available
+    // play with bot
+    playRandom();
+    setCurrentView("game");
+  };
+
+  const handleCreateRoom = (roomName) => {
+    setGameMode("online");
+    resetGame();
+    createRoom(roomName);
+    setCurrentView("game");
+  };
+
+  const handleJoinRoom = (roomId) => {
+    setGameMode("online");
+    resetGame();
+    joinRoomById(roomId);
+    setCurrentView("game");
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       <Header onHomeClick={handleBackToHome} />
@@ -64,12 +96,26 @@ function App() {
           onBack={handleBackToHome}
         />
       ) : currentView === "game" ? (
-        <GameBoard
-          gameState={gameState}
-          onCellClick={makeMove}
-          onResetGame={handleResetGame}
-          onBackToHome={handleBackToHome}
+        gameState.waitingForPlayer ? (
+          <WaitingScreen roomId={gameState.roomId} />
+        ) : (
+          <GameBoard
+            gameState={gameState}
+            onCellClick={makeMove}
+            onResetGame={handleResetGame}
+            onBackToHome={handleBackToHome}
+          />
+        )
+      ) : currentView === "multiplayer" ? (
+        <RoomsView
+          onPlayRandom={handlePlayRandom}
+          onCreateRoom={handleCreateRoom}
+          onJoinRoom={handleJoinRoom}
+          onBack={handleBackToHome}
+          availableRooms={gameState.rooms || []}
         />
+      ) : currentView === "lobby" ? (
+        <MultiplayerLobby gameState={gameState} />
       ) : (
         <HomePage
           onPlayBot={handlePlayBot}
