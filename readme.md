@@ -2,7 +2,8 @@
 
 SuperTac is a modern, feature-rich implementation of Ultimate Tic Tac Toe with both single-player and multiplayer modes. The game features an elegant user interface with **light and dark** theme support, various AI difficulty levels, and real-time multiplayer functionality.
 
-![SuperTac Game](https://placeholder-for-your-game-screenshot.com)
+![Homepage in light mode](homepage.png)
+![Gameplay in dark mode](gameplay.png)
 
 ## Table of Contents
 
