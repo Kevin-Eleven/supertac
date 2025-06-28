@@ -8,7 +8,9 @@ class SocketService {
 
   connect() {
     if (!this.socket) {
-      this.socket = io("http://localhost:3000", {
+      const backendUrl =
+        import.meta.env.VITE_API_URL || "http://localhost:3000";
+      this.socket = io(backendUrl, {
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
@@ -16,7 +18,7 @@ class SocketService {
       });
       this.setupBaseHandlers();
     }
-    // console.log("🔗 Attempting to connect to game server...");
+
     return this.socket;
   }
 
