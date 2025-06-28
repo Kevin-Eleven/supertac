@@ -7,6 +7,7 @@ SuperTac is a modern, feature-rich implementation of Ultimate Tic Tac Toe with b
 
 ## Table of Contents
 
+- [Live Demo](#live-demo)
 - [Features](#features)
 - [Technologies Used](#technologies-used)
 - [Installation](#installation)
@@ -64,6 +65,12 @@ SuperTac is a modern, feature-rich implementation of Ultimate Tic Tac Toe with b
    cd ../frontend
    npm install
    ```
+
+## Live Demo
+
+You can try out SuperTac without installing it locally by visiting our deployed version:
+
+[SuperTac](https://supertac.vercel.app)
 
 ## Running Locally
 
