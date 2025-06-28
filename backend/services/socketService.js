@@ -4,7 +4,12 @@ class SocketService {
   constructor(server) {
     this.io = new Server(server, {
       cors: {
-        origin: "http://localhost:5173", // Vite's default port
+        origin: [
+          "http://localhost:5173",
+          "https://supertac.vercel.app",
+          "https://supertac-hprfhaw3k-haris-projects-512fafb0.vercel.app/",
+          "https://supertac-git-main-haris-projects-512fafb0.vercel.app/",
+        ], // Vite's default port
         methods: ["GET", "POST"],
       },
     });
@@ -14,7 +19,7 @@ class SocketService {
 
   setupSocketHandlers() {
     this.io.on("connection", (socket) => {
-      console.log(`User connected: ${socket.id}`);
+      // console.log(`User connected: ${socket.id}`);
       // Create a room with a given roomName
       socket.on("createRoom", ({ roomName }) => {
         // create a roomId
@@ -38,8 +43,8 @@ class SocketService {
         this.rooms.set(roomId, room);
         socket.join(roomId);
         socket.emit("waitingForPlayer", { roomId });
-        console.log(this.rooms);
-        console.log(this.rooms.players);
+        // console.log(this.rooms);
+        // console.log(this.rooms.players);
       });
       // join a room
       socket.on("joinRoom", () => {
@@ -92,8 +97,8 @@ class SocketService {
             currentTurn: room.currentTurn,
           });
         }
-        console.log(this.rooms);
-        console.log(this.rooms.players);
+        // console.log(this.rooms);
+        // console.log(this.rooms.players);
       });
       // Join room by ID
       socket.on("joinRoomById", ({ roomId }) => {
