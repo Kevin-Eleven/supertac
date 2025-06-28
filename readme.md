@@ -226,5 +226,3 @@ backend/
 - Mobile app version
 
 ---
-
-Created with ❤️ by Haris
