@@ -18,6 +18,7 @@ class SocketService {
       // Create a room with a given roomName
       socket.on("createRoom", ({ roomName }) => {
         // create a roomId
+
         const roomId = `room-${Date.now()}-${Math.random()
           .toString(36)
           .substring(2, 15)}`;
@@ -37,8 +38,9 @@ class SocketService {
         this.rooms.set(roomId, room);
         socket.join(roomId);
         socket.emit("waitingForPlayer", { roomId });
+        console.log(this.rooms);
+        console.log(this.rooms.players);
       });
-
       // join a room
       socket.on("joinRoom", () => {
         // join a random room with available space
@@ -90,12 +92,13 @@ class SocketService {
             currentTurn: room.currentTurn,
           });
         }
+        console.log(this.rooms);
+        console.log(this.rooms.players);
       });
-
       // Join room by ID
       socket.on("joinRoomById", ({ roomId }) => {
         const room = this.rooms.get(roomId);
-
+        // console.log("trying to join room");
         if (!room) {
           socket.emit("roomError", { message: "Room not found" });
           return;
@@ -125,8 +128,9 @@ class SocketService {
           activeBoard: null,
           isGameOver: false,
           gameWinner: null,
+          roomId: room.id,
         };
-
+        // console.log("room joined successfully");
         // Notify both players about game start
         this.io.to(roomId).emit("gameStart", {
           gameState: room.gameState,
@@ -215,7 +219,6 @@ class SocketService {
         });
       });
 
-      // Handle disconnection
       socket.on("disconnect", () => {
         console.log(`User disconnected: ${socket.id}`);
         // Find and clean up any rooms the player was in
@@ -229,6 +232,7 @@ class SocketService {
               this.io.to(roomId).emit("playerLeft", {
                 message: "Opponent left the game",
               });
+              this.rooms.delete(roomId);
             }
           }
         });

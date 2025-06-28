@@ -48,7 +48,7 @@ class SocketService {
   joinRoom() {
     this.socket.emit("joinRoom");
   }
-  joinRoomById(roomId) {
+  joinRoomById(roomId, callback) {
     this.socket.emit("joinRoomById", { roomId });
   }
   // In socketService.js

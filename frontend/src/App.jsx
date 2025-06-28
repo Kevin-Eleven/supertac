@@ -11,6 +11,7 @@ import { useGame } from "./hooks/useGame";
 import MultiplayerLobby from "./components/MultiplayerLobby";
 function App() {
   const [currentView, setCurrentView] = useState("home"); // 'home', 'difficulty', 'game', 'multiplayer'
+  const [joiningRoom, setJoiningRoom] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] = useState("medium");
 
   const {
@@ -45,8 +46,9 @@ function App() {
   };
 
   const handleBackToHome = () => {
-    setCurrentView("home");
     resetGame();
+    setCurrentView("home");
+    // when i go home i want to disconnect from the socket connection
   };
 
   const handleBackToDifficulty = () => {
@@ -59,7 +61,7 @@ function App() {
 
   const handlePlayRandom = () => {
     setGameMode("online");
-    resetGame();
+    // resetGame();
     // join a random room and start playing if no room available
     // play with bot
     playRandom();
@@ -67,15 +69,14 @@ function App() {
   };
 
   const handleCreateRoom = (roomName) => {
-    setGameMode("online");
-    resetGame();
+    // resetGame();
     createRoom(roomName);
     setCurrentView("game");
   };
 
   const handleJoinRoom = (roomId) => {
-    setGameMode("online");
-    resetGame();
+    // resetGame();
+    setJoiningRoom(true);
     joinRoomById(roomId);
     setCurrentView("game");
   };
@@ -111,8 +112,8 @@ function App() {
           onPlayRandom={handlePlayRandom}
           onCreateRoom={handleCreateRoom}
           onJoinRoom={handleJoinRoom}
+          joiningRoom={joiningRoom}
           onBack={handleBackToHome}
-          availableRooms={gameState.rooms || []}
         />
       ) : currentView === "lobby" ? (
         <MultiplayerLobby gameState={gameState} />

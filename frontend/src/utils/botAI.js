@@ -27,7 +27,7 @@ const getMediumMove = (gameState) => {
       move.cellIndex,
       O
     );
-    const score = minimax(simulated, 4, false, -Infinity, Infinity);
+    const score = minimax(simulated, 3, false, -Infinity, Infinity);
 
     if (score > bestScore) {
       bestScore = score;
@@ -53,7 +53,7 @@ const getHardMove = (gameState) => {
       move.cellIndex,
       O
     );
-    const score = minimax(simulated, 5, false, -Infinity, Infinity);
+    const score = minimax(simulated, 4, false, -Infinity, Infinity);
 
     if (score > bestScore) {
       bestScore = score;
