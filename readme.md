@@ -89,6 +89,21 @@ You can try out SuperTac without installing it locally by visiting our deployed 
    ```
 
 3. Open your browser and navigate to [http://localhost:5173](http://localhost:5173)
+##  Deployment
+- The backend is containerized using Docker and hosted on Azure Container Instance.
+- Public Docker image available here: Docker Hub - SuperTac Backend
+- The frontend is deployed on Vercel for fast, serverless delivery.
+
+
+If you don’t want to install Node.js locally, you can pull and run the backend container from Docker Hub:
+
+### Pull the backend image
+```bash docker pull elevenahmad/supertac-backend:latest ```
+
+### Run the container (mapping port 5000)
+``` docker run -d -p 5000:5000 --name supertac-backend elevenahmad/supertac-backend:latest```
+The backend will now be available at:
+http://localhost:5000
 
 ## Game Modes
 
