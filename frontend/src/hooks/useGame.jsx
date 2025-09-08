@@ -3,6 +3,8 @@ import { simulateMove } from "../utils/gameLogic.js";
 import { getBotMove } from "../utils/botAI.js";
 import socketService from "../services/socketService";
 
+const STORAGE_KEY = "supertac_gamestate";
+
 function createInitialGameState() {
   return {
     boards: Array(9)
@@ -27,7 +29,57 @@ function createInitialGameState() {
   };
 }
 
+// Load game state from localStorage
+function loadGameStateFromStorage() {
+  try {
+    const savedState = localStorage.getItem(STORAGE_KEY);
+    if (savedState) {
+      const parsedState = JSON.parse(savedState);
+      // Only restore if it's an offline game (bot or local mode)
+      if (parsedState.gameMode === "bot" || parsedState.gameMode === "local") {
+        return {
+          ...createInitialGameState(),
+          ...parsedState,
+          // Reset online-specific properties
+          roomId: null,
+          playerSymbol: null,
+          isMyTurn: false,
+          opponentName: null,
+          waitingForPlayer: false,
+          isThinking: false, // Reset thinking state on page load
+        };
+      }
+    }
+  } catch (error) {
+    console.error("Error loading game state from localStorage:", error);
+  }
+  return createInitialGameState();
+}
+
+// Save game state to localStorage
+function saveGameStateToStorage(state) {
+  try {
+    // Only save offline games (bot or local mode)
+    if (state.gameMode === "bot" || state.gameMode === "local") {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+  } catch (error) {
+    console.error("Error saving game state to localStorage:", error);
+  }
+}
+
+// Clear game state from localStorage
+function clearGameStateFromStorage() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (error) {
+    console.error("Error clearing game state from localStorage:", error);
+  }
+}
+
 const gameReducer = (state, action) => {
+  let newState;
+
   switch (action.type) {
     case "MAKE_MOVE": {
       const { boardIndex, cellIndex } = action.payload;
@@ -42,17 +94,18 @@ const gameReducer = (state, action) => {
         return state;
       }
 
-      const newState = simulateMove(
+      const gameState = simulateMove(
         state,
         boardIndex,
         cellIndex,
         state.currentPlayer
       );
 
-      return {
-        ...newState,
+      newState = {
+        ...gameState,
         currentPlayer: state.currentPlayer === "x" ? "o" : "x",
       };
+      break;
     }
 
     // the botMove payload is an object with boardIndex and cellIndex
@@ -65,57 +118,74 @@ const gameReducer = (state, action) => {
     }
 
     case "RESET_GAME": {
-      return {
+      newState = {
         ...createInitialGameState(),
         gameMode: state.gameMode,
         botDifficulty: state.botDifficulty,
       };
+      // Clear localStorage when resetting
+      clearGameStateFromStorage();
+      break;
     }
+
     case "SET_THINKING": {
-      return { ...state, isThinking: action.payload };
+      newState = { ...state, isThinking: action.payload };
+      break;
     }
 
     case "SET_GAME_MODE": {
-      return { ...state, gameMode: action.payload };
+      newState = { ...state, gameMode: action.payload };
+      // Clear localStorage when switching to online mode
+      if (action.payload === "online") {
+        clearGameStateFromStorage();
+      }
+      break;
     }
 
     case "SET_BOT_DIFFICULTY": {
-      return { ...state, botDifficulty: action.payload };
+      newState = { ...state, botDifficulty: action.payload };
+      break;
     }
 
     case "SET_ROOM": {
-      return { ...state, roomId: action.payload };
+      newState = { ...state, roomId: action.payload };
+      break;
     }
 
     case "SET_PLAYER_INFO": {
-      return {
+      newState = {
         ...state,
         playerSymbol: action.payload.symbol,
         isMyTurn: action.payload.symbol === "x",
       };
+      break;
     }
 
     case "SET_OPPONENT_INFO": {
-      return { ...state, opponentName: action.payload };
+      newState = { ...state, opponentName: action.payload };
+      break;
     }
 
     case "SET_WAITING": {
-      return { ...state, waitingForPlayer: action.payload };
+      newState = { ...state, waitingForPlayer: action.payload };
+      break;
     }
 
     case "UPDATE_TURN": {
-      return { ...state, isMyTurn: action.payload };
+      newState = { ...state, isMyTurn: action.payload };
+      break;
     }
 
     // Update the OPPONENT_LEFT case in the gameReducer function
     case "OPPONENT_LEFT": {
-      return {
+      newState = {
         ...state,
         isGameOver: true,
         gameWinner: "opponent_left",
         roomId: null,
         waitingForPlayer: false,
       };
+      break;
     }
 
     case "UPDATE_GAME_STATE": {
@@ -127,7 +197,7 @@ const gameReducer = (state, action) => {
         gameWinner,
         roomId,
       } = action.payload;
-      return {
+      newState = {
         ...state,
         boards,
         boardWinners,
@@ -136,17 +206,29 @@ const gameReducer = (state, action) => {
         gameWinner,
         roomId,
       };
+      break;
     }
 
     default:
       return state;
   }
+
+  // Save to localStorage after state changes (for offline games only)
+  if (
+    newState &&
+    (newState.gameMode === "bot" || newState.gameMode === "local")
+  ) {
+    saveGameStateToStorage(newState);
+  }
+
+  return newState;
 };
 
 export const useGame = () => {
   const [gameState, dispatch] = useReducer(
     gameReducer,
-    createInitialGameState()
+    null,
+    loadGameStateFromStorage
   );
 
   // Handle bot moves

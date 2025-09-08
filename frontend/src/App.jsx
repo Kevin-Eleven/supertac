@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import HomePage from "./pages/HomePage";
 import Header from "./components/Header";
@@ -9,11 +9,59 @@ import WaitingScreen from "./components/WaitingScreen";
 
 import { useGame } from "./hooks/useGame";
 import MultiplayerLobby from "./components/MultiplayerLobby";
-function App() {
-  const [currentView, setCurrentView] = useState("home"); // 'home', 'difficulty', 'game', 'multiplayer'
-  const [joiningRoom, setJoiningRoom] = useState(false);
-  const [selectedDifficulty, setSelectedDifficulty] = useState("medium");
 
+const VIEW_STORAGE_KEY = "supertac_current_view";
+const DIFFICULTY_STORAGE_KEY = "supertac_selected_difficulty";
+
+// Load view state from localStorage
+function loadViewFromStorage(gameState) {
+  try {
+    const savedView = localStorage.getItem(VIEW_STORAGE_KEY);
+    const savedDifficulty = localStorage.getItem(DIFFICULTY_STORAGE_KEY);
+
+    // Only restore view if we have a saved offline game
+    if (
+      savedView &&
+      (gameState.gameMode === "bot" || gameState.gameMode === "local")
+    ) {
+      return {
+        view: savedView,
+        difficulty: savedDifficulty || "medium",
+      };
+    }
+  } catch (error) {
+    console.error("Error loading view state from localStorage:", error);
+  }
+  return {
+    view: "home",
+    difficulty: "medium",
+  };
+}
+
+// Save view state to localStorage
+function saveViewToStorage(view, difficulty, gameMode) {
+  try {
+    // Only save for offline games
+    if (gameMode === "bot" || gameMode === "local") {
+      localStorage.setItem(VIEW_STORAGE_KEY, view);
+      localStorage.setItem(DIFFICULTY_STORAGE_KEY, difficulty);
+    }
+  } catch (error) {
+    console.error("Error saving view state to localStorage:", error);
+  }
+}
+
+// Clear view state from localStorage
+function clearViewFromStorage() {
+  try {
+    localStorage.removeItem(VIEW_STORAGE_KEY);
+    localStorage.removeItem(DIFFICULTY_STORAGE_KEY);
+  } catch (error) {
+    console.error("Error clearing view state from localStorage:", error);
+  }
+}
+
+function App() {
   const {
     gameState,
     makeMove,
@@ -24,6 +72,31 @@ function App() {
     playRandom,
     joinRoomById,
   } = useGame();
+
+  // Initialize view state based on saved data
+  const [currentView, setCurrentView] = useState(() => {
+    return loadViewFromStorage(gameState).view;
+  });
+
+  const [selectedDifficulty, setSelectedDifficulty] = useState(() => {
+    return loadViewFromStorage(gameState).difficulty;
+  });
+
+  const [joiningRoom, setJoiningRoom] = useState(false);
+
+  // Save view state whenever it changes (for offline games only)
+  useEffect(() => {
+    if (gameState.gameMode === "bot" || gameState.gameMode === "local") {
+      saveViewToStorage(currentView, selectedDifficulty, gameState.gameMode);
+    }
+  }, [currentView, selectedDifficulty, gameState.gameMode]);
+
+  // Clear view storage when switching to online mode
+  useEffect(() => {
+    if (gameState.gameMode === "online") {
+      clearViewFromStorage();
+    }
+  }, [gameState.gameMode]);
 
   const handlePlayBot = () => {
     setCurrentView("difficulty");
@@ -48,6 +121,7 @@ function App() {
   const handleBackToHome = () => {
     resetGame();
     setCurrentView("home");
+    clearViewFromStorage(); // Clear view storage when going home
     // when i go home i want to disconnect from the socket connection
   };
 

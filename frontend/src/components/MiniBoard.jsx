@@ -14,10 +14,17 @@ const MiniBoard = ({
 }) => {
   const renderCellContent = (cellValue) => {
     if (cellValue === "x") {
-      return <X className="w-8 h-8 text-blue-600" strokeWidth={3} />;
+      return (
+        <X className="md:w-8 md:h-8 h-4 w-4 text-blue-600" strokeWidth={3} />
+      );
     }
     if (cellValue === "o") {
-      return <Circle className="w-8 h-8 text-red-600" strokeWidth={3} />;
+      return (
+        <Circle
+          className="md:w-8 md:h-8 h-4 w-4 text-red-600"
+          strokeWidth={3}
+        />
+      );
     }
     return null;
   };
@@ -35,8 +42,8 @@ const MiniBoard = ({
           } rounded-lg backdrop-blur-sm`}
         >
           <div className="text-center">
-            <Trophy className="w-10 h-10 mx-auto mb-1" />
-            <div className="text-6xl font-bold">{winner}</div>
+            <Trophy className="md:w-10 md:h-10 h-6 w-6 mx-auto mb-1" />
+            <div className="md:text-6xl text-4xl font-bold">{winner}</div>
           </div>
         </motion.div>
       );
