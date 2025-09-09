@@ -192,7 +192,12 @@ const GameBoard = ({ gameState, onCellClick, onResetGame, onBackToHome }) => {
                         </>
                       )
                     ) : (
-                      <span>Player {gameState.gameWinner} Won!</span>
+                      <span>
+                        {gameState.gameWinner === "opponent_left"
+                          ? "You"
+                          : "Opponent"}{" "}
+                        Won!
+                      </span>
                     )
                   ) : (
                     <span>It's a Draw!</span>
